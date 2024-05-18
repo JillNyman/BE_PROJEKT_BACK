@@ -3,9 +3,9 @@
 const express = require('express');
 const router = express.Router();
 const sqlite3 = require("sqlite3").verbose();
-//const bcrypt = require("bcrypt");
-//const jwt = require("jsonwebtoken");
-//const cors = require('cors');
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const cors = require('cors');
 require("dotenv").config();
 
 //Koppla upp mot databasen
