@@ -1,7 +1,7 @@
 //Routes för autentisering admin
 
 const express = require('express');
-const router = express.Router();
+const cstRouter = express.Router();
 const sqlite3 = require("sqlite3").verbose();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -17,12 +17,13 @@ let db = new sqlite3.Database(process.env.DATABASE, (err) => {
     }
 });
 
-// http://localhost:3333/api/auth/ FNKAR
-router.get('/', (req, res) => {
-    const sql = 'SELECT * FROM admin_users;';
+
+//URL: http://localhost:3333/api/authcst FUNKAR
+cstRouter.get('/', (req, res) => {
+    const sql = 'SELECT * FROM customer_users;';
     db.all(sql, (err, rows) => {
         if(err){
-            res.status(400).json({ message: "Error when retrieving list of admins"});
+            res.status(400).json({ message: "Error when retrieving list of users"});
             return;
         } else {
             res.json(rows);
@@ -31,28 +32,28 @@ router.get('/', (req, res) => {
     });
 })
 
-//Skapa ny adminanvändare
-router.post("/regadmin", async(req, res) =>{
-    console.log("Initierat registrering av ny admin...");
+//Skapa ny kundanvändare URL: http://localhost:3334/api/authcst/regcustomer FUNKAR
+cstRouter.post("/regcustomer", async(req, res) =>{
+    console.log("Initierat registrering av ny kund...");
     try{
-        const {admin_name, admin_password} = req.body;
+        const {customer_name, customer_password, customer_email} = req.body;
 
         //validera input
-        if(!admin_name || !admin_password) {
-            return res.status(400).json({error: "Invalid input, send username AND password"});
+        if(!customer_name || !customer_password || !customer_email) {
+            return res.status(400).json({error: "Invalid input, send username, password and email"});
         }
 
         //Hasha lösenord 
-        const hashedPassword = await bcrypt.hash(req.body.admin_password, 10);
+        const hashedPassword = await bcrypt.hash(req.body.customer_password, 10);
         
 
         //Om korrekt - spara användare i tabell
-        const sql = `INSERT INTO admin_users(admin_name, admin_password) VALUES(?, ?)`;
-        db.run(sql, [admin_name, hashedPassword], (err) => {
+        const sql = `INSERT INTO customer_users(customer_name, customer_password, customer_email) VALUES(?, ?, ?)`;
+        db.run(sql, [customer_name, hashedPassword, customer_email], (err) => {
             if(err){
-                res.status(400).json({ message: "Error creating admin"});
+                res.status(400).json({ message: "Error creating user"});
             } else {
-                res.status(201).json({message: "Admin created"});
+                res.status(201).json({message: "User created"});
             }
         });
         
@@ -63,40 +64,39 @@ router.post("/regadmin", async(req, res) =>{
     
 });
 
-
-//Logga in adminanvändare URL: http://localhost:3333/api/auth/loginadmin svar 20 maj kväll:  "message": "Error authenticating admin..." 2 min senare, efter omstart av fönstret: FUNKAR
-router.post("/loginadmin", (req, res) => {
+//Logga in kundanvändare URL: http://localhost:3333/api/authcst/logincustomer FUNKAR
+cstRouter.post("/logincustomer", (req, res) => {
     try{
-        let admin_name = req.body.admin_name;
-        let admin_password = req.body.admin_password;
+        let customer_name = req.body.customer_name;
+        let customer_password = req.body.customer_password;
 
-        console.log("Tagit emot: " + admin_name + " " + admin_password);
+        console.log("Tagit emot: " + customer_name + " " + customer_password);
 
         //validera input
-        if(!admin_name || !admin_password) {
+        if(!customer_name || !customer_password) {
             return res.status(400).json({error: "Invalid input, send username AND password"});
         }
     
        //Kontrollera om användaren finns
-       const sql = `SELECT * FROM admin_users WHERE admin_name=?`;
-       db.get(sql, [admin_name], async (err, row) => {
+       const sql = `SELECT * FROM customer_users WHERE customer_name=?`;
+       db.get(sql, [customer_name], async (err, row) => {
         if(err){
-            res.status(400).json({message: "Error authenticating admin..."});
+            res.status(400).json({message: "Error authenticating user..."});
         } else if(!row) {
             res.status(401).json({message: "Incorrect username/password!"});
         } else {
             //Användaren finns
             console.log("Användaren finns");
-            const passwordMatch = await bcrypt.compare(admin_password, row.admin_password);
+            const passwordMatch = await bcrypt.compare(customer_password, row.customer_password);
 
             if(!passwordMatch) {
                 res.status(401).json({message: "Incorrect username/password"});
             } else {
                 //Skapa JWT
-                const payload = {admin_name: row.admin_name}; // <----
+                const payload = {customer_name: row.customer_name}; // <----
                 const token = jwt.sign(payload, process.env.JWT_SECRET_KEY, {expiresIn: '1h'});
                 const response = {
-                    message: "Admin logged in!",
+                    message: "User logged in!",
                     token: token
                 }
                 res.status(200).json({response});
@@ -111,9 +111,9 @@ router.post("/loginadmin", (req, res) => {
     
 });
 
-//Uppdatera admin
+//Radera kund
 
-//Radera admin
+//Uppdatera kund
 
 // Stäng databasen
 process.on('exit', () => {
@@ -127,5 +127,5 @@ process.on('exit', () => {
     });
 });
 
-module.exports = router;
+module.exports = cstRouter;
 

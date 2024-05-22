@@ -4,15 +4,24 @@ const sqlite3 = require('sqlite3').verbose();
 
 const db = new sqlite3.Database(process.env.DATABASE);
 
+const addColumn = `ALTER TABLE menu ADD COLUMN prod_img TEXT;`;
+
+db.run(addColumn,function(err) {
+    if(err){
+        return console.error(err.message);
+    }
+    console.log('Kolumn tillagd.');
+});
+
 //Skapa tabell: menu
-db.serialize(() => {
+/*db.serialize(() => {
     db.run("DROP TABLE IF EXISTS menu");
 
     db.run(`CREATE TABLE menu(
         prod_id INTEGER PRIMARY KEY AUTOINCREMENT,
         prod_category VARCHAR(255),
         prod_name VARCHAR(255),
-        prod_price INTEGER,
+        prod_price VARCHAR(255),
         prod_description VARCHAR(255)    
     )`);
     console.log("Table MENU created");
@@ -61,4 +70,12 @@ db.serialize(() => {
         customer_created DATETIME DEFAULT CURRENT_TIMESTAMP  
     )`);
     console.log("Table CUSTOMER_USERS created");
-})
+})*/
+
+db.close((err) => {
+    if(err) {
+        console.error(err.message);
+    }
+
+    console.log('Databasen frånkopplad');
+});
