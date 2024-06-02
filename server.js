@@ -1,37 +1,53 @@
+//Projektets server
+
+//Import av moduler
 const express = require('express');
-//const sqlite3 = require('sqlite3');
+const sqlite3 = require('sqlite3').verbose();
 const bodyParser = require('body-parser');
-const authRoutes = require("./routes/authRoutes");
-const menuRoutes = require("./routes/menuRoutes");
-const authCstRoutes = require("./routes/authCstRoutes");
+
 const jwt = require("jsonwebtoken");
 const cors = require('cors');
+//const path = require('path'); //för hantering av bilder
 require('dotenv').config;
 
+//Skapa express-app
 const app = express();
+
+//Koppla upp mot databasen
+const db = new sqlite3.Database("./db/bakery.db");
+
+app.use((req, res, next) => {
+    req.db = db;
+    next();
+});
+
+//Konfiguration av middleware
 app.use(cors());
-const port = process.env.PORT || 3333;
 app.use(bodyParser.json());
 app.use(express.json());
 
-//Koppla upp mot databasen
-//const db = new sqlite3.Database("./db/bakery.db");
+const port = process.env.PORT || 3334;
 
-//Routes
+//Importera routes
+const authRoutes = require("./routes/authRoutes");
+const menuRoutes = require("./routes/menuRoutes");
+//const authCstRoutes = require("./routes/authCstRoutes");
+const contactRoutes = require("./routes/customerRoutes");
+
+//Använda routes
 app.use("/api/auth", authRoutes);
-app.use("/api/authcst", authCstRoutes);
-/*app.get("/bakery", (req, res) => {
-    res.json({message: "Welcome tom my API"});
-    console.log("Bakery startad");
-});*/
+//app.use("/api/authcst", authCstRoutes);
 app.use("/api/menu", menuRoutes);
+app.use("/api/contact", contactRoutes);
+//app.use('/images', express.static(path.join(__dirname, 'src/images'))); //Statiska filer från mappen "images"
 
 //Skyddade routes
 app.get("/api/protected", authenticateToken, (req, res) => {
     res.json({message: "Skyddad route!"});
 });
 
-//Validera token för admin
+//Validera token för admin, ge access till skyddade routes
+//URL: http://localhost:3333/api/protected FUNKAR
 function authenticateToken(req, res, next) {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1]; //Token
@@ -52,8 +68,29 @@ function authenticateToken(req, res, next) {
     });
 };
 
-//Starta applikation
+//Starta servern
 app.listen(port, () => {
     console.log(`Servern startad på http://localhost:${port}`);
 })
+
+//Stäng servern
+const shutDown = () => {
+    console.log("Stänger ner databasen...");
+    db.close((err) => {
+        if(err) {
+            console.error("Fel när databasen skulle stängas");
+        } else {
+            console.log("Databasen stängdes ned");
+        }
+
+        server.close(() => {
+            console.log("Servern stängd.");
+            process.exit(0);
+        });
+        
+    });
+};
+
+process.on('SIGINT', shutDown);
+process.on('SIGTERM', shutDown);
 
