@@ -17,7 +17,8 @@ require("dotenv").config();
     }
 });*/
 
-// http://localhost:3333/api/auth/ FNKAR
+//Hämta alla användare
+// http://localhost:333X/api/auth/ FUNKAR
 router.get('/', (req, res) => {
     const db = req.db;
     const sql = 'SELECT * FROM admin_users;';
@@ -102,8 +103,9 @@ router.post("/loginadmin", (req, res) => {
                     message: "Admin logged in!",
                     token: token
                 }
-                res.status(200).json({response});
                 console.log("Skickat token: " + token);
+                return res.status(200).json({response});
+                
             }
         }
        });

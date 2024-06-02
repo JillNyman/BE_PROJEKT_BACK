@@ -25,8 +25,28 @@ app.use((req, res, next) => {
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.json());
+app.use(express.static('src'));
 
 const port = process.env.PORT || 3334;
+
+//HTML - uppdatera
+app.get('/data/:prod_id', (req, res) => {
+    
+        
+        const prod_id = req.params.prod_id;
+        const sql = `SELECT FROM menu WHERE prod_id=?;`;
+        db.get(sql, [prod_id], (err, row) => {
+            if(err) {
+                res.status(400).json({"error": err.message});
+                return;
+            }
+            res.json({
+                "message": "hämtningen lyckades",
+                "data": row
+            });
+        });
+    });
+
 
 //Importera routes
 const authRoutes = require("./routes/authRoutes");
@@ -69,7 +89,7 @@ function authenticateToken(req, res, next) {
 };
 
 //Starta servern
-app.listen(port, () => {
+const server = app.listen(port, () => {
     console.log(`Servern startad på http://localhost:${port}`);
 })
 

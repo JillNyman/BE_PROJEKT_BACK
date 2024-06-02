@@ -23,15 +23,7 @@ menuRouter.get('/', (req, res) => {
         if(rows.length === 0){
             res.status(404).json({message: "Inga poster funna!"});
         }else {
-           /* const productWithImg = rows.map(row => {
-                return {
-                    ...row,
-                    image: '/src/images/' + row.prod_img
-                    
-                };
-                
-            });
-            console.log(image);*/
+          
             res.json(rows);
             console.table(rows);
            
@@ -100,6 +92,22 @@ menuRouter.delete("/delete/:prod_id", (req, res) => {
     res.json({message: "Produkten raderad"});
     console.log("Produkt raderad: ", id);
 });
+
+/*menuRouter.get("/get/:prod_id", (req, res) => {
+    const db = req.db;
+    const prod_id = req.params.prod_id;
+    const sql = `SELECT FROM menu WHERE prod_id=?;`;
+    db.get(sql, [prod_id], (err, row) => {
+        if(err) {
+            res.status(400).json({"error": err.message});
+            return;
+        }
+        res.json({
+            "message": "hämtningen lyckades",
+            "data": row
+        });
+    });
+});*/
 
 
 
