@@ -1,17 +1,9 @@
 //Routes för menyn
 
 const express = require('express');
-//const sqlite3 = require("sqlite3").verbose();
 const menuRouter = express.Router();
-//const bcrypt = require("bcrypt");
-//const jwt = require("jsonwebtoken");
-//const cors = require('cors');
-//app.use(cors());
-//app.use(express.json());
-//require("dotenv").config();
 
-
-//Visa alla produkter i menyn (göra lista i adminvyn, med möjlighet att välja produkt att ändra?) URL:  http://localhost:3333/api/menu FUNKAR
+//Visa alla produkter i menyn URL:  http://localhost:3333/api/menu 
 menuRouter.get('/', (req, res) => {
     const db = req.db;
     db.all('SELECT * FROM menu;', (err, rows) => {
@@ -32,14 +24,10 @@ menuRouter.get('/', (req, res) => {
 });
 
 
-//Lägg till produkt i menyn FUNKAR URL: http://localhost:3333/api/menu/menu 
+//Lägg till produkt i menyn URL: http://localhost:3333/api/menu/menu 
 menuRouter.post('/menu', (req, res) => {
     const db = req.db;
         const {prod_category, prod_name, prod_price, prod_description} = req.body;
-   
-   /*if(prod_category.length === 0){
-        return res.status(400).json({error: "Invalid input, send category"});
-    }*/
 
     let stmt = db.prepare(`INSERT INTO menu(prod_category, prod_name, prod_price, prod_description)VALUES(?, ?, ?, ?);`);
     stmt.run(prod_category, prod_name, prod_price, prod_description);
@@ -51,35 +39,42 @@ menuRouter.post('/menu', (req, res) => {
             prod_price: prod_price, 
             prod_description: prod_description
         };
+        if(res.status === 200){
             res.json({message: "Product added", product});
+        } else {
+            res.status(500).json({message: "Fel när produkt skulle läggas till"});
+        }           
         
     });
 
 //Ändra produktinformation
-//http://localhost:3333/api/menu/menu/3 Uppdaterar databas, men thunderclient står och tuggar.
-//ÄNDRA http://localhost:3333/api/menu/edit/3
-menuRouter.put("/edit/:prod_id", (req, res) => {
+//http://localhost:3333/api/menu/edit/3
+menuRouter.put("/edit/:prod_id", async (req, res) => {
     const db = req.db;
     let prod_id = req.params.prod_id;
 
     const {prod_category, prod_name, prod_price, prod_description} = req.body;
 
-    let stmt = db.prepare(`UPDATE menu SET prod_category=?, prod_name=?, prod_price=?, prod_description=? WHERE prod_id=?;`);
-    stmt.run(prod_category, prod_name, prod_price, prod_description, prod_id);
-    stmt.finalize();
+    try{
+
+        let stmt = db.prepare(`UPDATE menu SET prod_category=?, prod_name=?, prod_price=?, prod_description=? WHERE prod_id=?;`);
+        stmt.run(prod_category, prod_name, prod_price, prod_description, prod_id);
+        stmt.finalize();
     
-    let product = {
-        prod_category : prod_category, 
-        prod_name: prod_name, 
-        prod_price: prod_price, 
-        prod_description: prod_description
-    };
-        res.json({message: "Product updated", product});
+        let product = {
+            prod_category : prod_category, 
+            prod_name: prod_name, 
+            prod_price: prod_price, 
+            prod_description: prod_description
+        };
+    
+        res.status(200).json({message: "Product updated", product});
+    } catch {
+    res.status(500).json({message: "Fel vid uppdatering"});
+}
 });
 
-
 //Radera produkt
-////http://localhost:3333/api/menu/menu/3
 //ÄNDRA! http://localhost:3333/api/menu/delete/3
 menuRouter.delete("/delete/:prod_id", (req, res) => {
     const db = req.db;
@@ -92,23 +87,5 @@ menuRouter.delete("/delete/:prod_id", (req, res) => {
     res.json({message: "Produkten raderad"});
     console.log("Produkt raderad: ", id);
 });
-
-/*menuRouter.get("/get/:prod_id", (req, res) => {
-    const db = req.db;
-    const prod_id = req.params.prod_id;
-    const sql = `SELECT FROM menu WHERE prod_id=?;`;
-    db.get(sql, [prod_id], (err, row) => {
-        if(err) {
-            res.status(400).json({"error": err.message});
-            return;
-        }
-        res.json({
-            "message": "hämtningen lyckades",
-            "data": row
-        });
-    });
-});*/
-
-
 
 module.exports = menuRouter;

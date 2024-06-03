@@ -7,7 +7,6 @@ const bodyParser = require('body-parser');
 
 const jwt = require("jsonwebtoken");
 const cors = require('cors');
-//const path = require('path'); //för hantering av bilder
 require('dotenv').config;
 
 //Skapa express-app
@@ -29,37 +28,15 @@ app.use(express.static('src'));
 
 const port = process.env.PORT || 3334;
 
-//HTML - uppdatera
-app.get('/data/:prod_id', (req, res) => {
-    
-        
-        const prod_id = req.params.prod_id;
-        const sql = `SELECT FROM menu WHERE prod_id=?;`;
-        db.get(sql, [prod_id], (err, row) => {
-            if(err) {
-                res.status(400).json({"error": err.message});
-                return;
-            }
-            res.json({
-                "message": "hämtningen lyckades",
-                "data": row
-            });
-        });
-    });
-
-
 //Importera routes
 const authRoutes = require("./routes/authRoutes");
 const menuRoutes = require("./routes/menuRoutes");
-//const authCstRoutes = require("./routes/authCstRoutes");
 const contactRoutes = require("./routes/customerRoutes");
 
 //Använda routes
 app.use("/api/auth", authRoutes);
-//app.use("/api/authcst", authCstRoutes);
 app.use("/api/menu", menuRoutes);
 app.use("/api/contact", contactRoutes);
-//app.use('/images', express.static(path.join(__dirname, 'src/images'))); //Statiska filer från mappen "images"
 
 //Skyddade routes
 app.get("/api/protected", authenticateToken, (req, res) => {
@@ -67,7 +44,7 @@ app.get("/api/protected", authenticateToken, (req, res) => {
 });
 
 //Validera token för admin, ge access till skyddade routes
-//URL: http://localhost:3333/api/protected FUNKAR
+//URL: http://localhost:3333/api/protected 
 function authenticateToken(req, res, next) {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1]; //Token

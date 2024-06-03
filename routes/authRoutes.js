@@ -2,23 +2,13 @@
 
 const express = require('express');
 const router = express.Router();
-//const sqlite3 = require("sqlite3").verbose();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-//const cors = require('cors');
 require("dotenv").config();
 
-//Koppla upp mot databasen
-/*let db = new sqlite3.Database(process.env.DATABASE, (err) => {
-    if (err) {
-        console.error('Error opening database:', err.message);
-    } else {
-        console.log('Connected to the SQLite database.');
-    }
-});*/
 
 //Hämta alla användare
-// http://localhost:333X/api/auth/ FUNKAR
+// http://localhost:333X/api/auth/ 
 router.get('/', (req, res) => {
     const db = req.db;
     const sql = 'SELECT * FROM admin_users;';
@@ -46,8 +36,7 @@ router.post("/regadmin", async(req, res) =>{
         }
 
         //Hasha lösenord 
-        const hashedPassword = await bcrypt.hash(req.body.admin_password, 10);
-        
+        const hashedPassword = await bcrypt.hash(req.body.admin_password, 10);        
 
         //Om korrekt - spara användare i tabell
         const sql = `INSERT INTO admin_users(admin_name, admin_password) VALUES(?, ?)`;
@@ -67,7 +56,7 @@ router.post("/regadmin", async(req, res) =>{
 });
 
 
-//Logga in adminanvändare URL: http://localhost:3333/api/auth/loginadmin svar 20 maj kväll:  "message": "Error authenticating admin..." 2 min senare, efter omstart av fönstret: FUNKAR
+//Logga in adminanvändare URL: http://localhost:3333/api/auth/loginadmin 
 router.post("/loginadmin", (req, res) => {
     const db = req.db;
     try{
@@ -115,22 +104,6 @@ router.post("/loginadmin", (req, res) => {
     }       
     
 });
-
-//Uppdatera admin
-
-//Radera admin
-
-// Stäng databasen
-/*process.on('exit', () => {
-    db.close((err) => {
-        if (err) {
-            console.error('Error closing database:', err.message);
-        } 
-            console.log('Closed the database connection.');
-            process.exit(0);
-    
-    });
-});*/
 
 module.exports = router;
 
