@@ -76,16 +76,19 @@ menuRouter.put("/edit/:prod_id", async (req, res) => {
 
 //Radera produkt
 //ÄNDRA! http://localhost:3333/api/menu/delete/3
-menuRouter.delete("/delete/:prod_id", (req, res) => {
+menuRouter.delete("/delete/:id", (req, res) => {
     const db = req.db;
-    let prod_id = req.params.prod_id;
-    db.run("DELETE FROM menu WHERE prod_id=?;", prod_id, (err) => {
+    let id = req.params.id;
+    db.run(`DELETE FROM menu WHERE prod_id=?`, id, function(err) {
         if(err){
+            res.status(400).json({"error": err.message});
             console.log(err.message);
+            return;
         }
+        res.json({message: "Produkten raderad"});
+        console.log("Produkt raderad: ", id);
     })
-    res.json({message: "Produkten raderad"});
-    console.log("Produkt raderad: ", id);
+   
 });
 
 module.exports = menuRouter;

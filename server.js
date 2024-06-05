@@ -26,7 +26,7 @@ app.use(bodyParser.json());
 app.use(express.json());
 app.use(express.static('src'));
 
-const port = process.env.PORT || 3334;
+const port = process.env.PORT || 3333;
 
 //Importera routes
 const authRoutes = require("./routes/authRoutes");
