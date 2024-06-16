@@ -25,10 +25,11 @@ menuRouter.get('/', (req, res) => {
 
 
 //Lägg till produkt i menyn URL: http://localhost:3333/api/menu/menu 
-menuRouter.post('/menu', (req, res) => {
+menuRouter.post("/menu", (req, res) => {
     const db = req.db;
         const {prod_category, prod_name, prod_price, prod_description} = req.body;
 
+        try{
     let stmt = db.prepare(`INSERT INTO menu(prod_category, prod_name, prod_price, prod_description)VALUES(?, ?, ?, ?);`);
     stmt.run(prod_category, prod_name, prod_price, prod_description);
     stmt.finalize();
@@ -39,10 +40,11 @@ menuRouter.post('/menu', (req, res) => {
             prod_price: prod_price, 
             prod_description: prod_description
         };
-        if(res.status === 200){
-            res.json({message: "Product added", product});
-        } else {
-            res.status(500).json({message: "Fel när produkt skulle läggas till"});
+            res.status(200).json({message: "Product added", product});
+    
+    } catch(error){
+            console.error("Error occurred:", error);
+            res.status(500).json({message: "Fel när produkt skulle läggas till!"});
         }           
         
     });
@@ -69,25 +71,35 @@ menuRouter.put("/edit/:prod_id", async (req, res) => {
         };
     
         res.status(200).json({message: "Product updated", product});
-    } catch {
+    } catch (error){
+        console.error("Error occurred:", error);
+          
     res.status(500).json({message: "Fel vid uppdatering"});
 }
 });
 
 //Radera produkt
-//ÄNDRA! http://localhost:3333/api/menu/delete/3
+// http://localhost:3333/api/menu/delete/3
 menuRouter.delete("/delete/:id", (req, res) => {
     const db = req.db;
     let id = req.params.id;
+    try{
     db.run(`DELETE FROM menu WHERE prod_id=?`, id, function(err) {
         if(err){
+            console.error("Error occurred:", err.message);
             res.status(400).json({"error": err.message});
-            console.log(err.message);
+            
             return;
         }
         res.json({message: "Produkten raderad"});
         console.log("Produkt raderad: ", id);
-    })
+    });
+    } catch(error){
+        console.error("Error occurred:", error);
+          
+        res.status(500).json({message: "Fel när produkt skulle raderas"});
+    }  
+
    
 });
 

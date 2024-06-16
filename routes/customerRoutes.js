@@ -8,14 +8,15 @@ customerRouter.get('/', (req, res) => {
     const db = req.db;
     db.all('SELECT * FROM inbox;', (err, rows) => {
         if(err){
-            res.status(500).json({error: "Något gick fel: " +err});
+            res.status(500).json({error: "Något gick fel: " + err.message});
             return;
         }
         //Kontrollera resultatet
         if(rows.length === 0){
             res.status(404).json({message: "Inga poster funna!"});
         }else {
-            res.json(rows);
+            res.status(200).json(rows);
+            //res.json(rows);
             console.table(rows);
         };
     });
@@ -26,6 +27,7 @@ customerRouter.post('/', (req, res) => {
     const db = req.db;
     const {sender_name, sender_email, sender_number, sender_message} = req.body;
 
+    try{
     let stmt = db.prepare(`INSERT INTO inbox(sender_name, sender_email, sender_number, sender_message)VALUES(?, ?, ?, ?);`);
     stmt.run(sender_name, sender_email, sender_number, sender_message);
     stmt.finalize();
@@ -37,6 +39,10 @@ customerRouter.post('/', (req, res) => {
         sender_message: sender_message
     };
         res.json({message: "Message added", inboxMessage});
+    } catch(error){
+        console.error("Error occurred:", error);
+            res.status(500).json({message: "Fel när meddelande skulle skickas"});
+    }
     
 });
 
