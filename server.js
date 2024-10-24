@@ -1,13 +1,14 @@
 //Projektets server
-
+Object.keys(require.cache).forEach(function(key) { delete require.cache[key] })
 //Import av moduler
 const express = require('express');
-const sqlite3 = require('sqlite3').verbose();
+const path = require('path');
+const sqlite3 = require('sqlite3').verbose(); //
 const bodyParser = require('body-parser');
-
 const jwt = require("jsonwebtoken");
 const cors = require('cors');
-require('dotenv').config;
+require('dotenv').config();
+const { authenticateToken } = require('./authMiddleware'); 
 
 //Skapa express-app
 const app = express();
@@ -15,16 +16,22 @@ const app = express();
 //Koppla upp mot databasen
 const db = new sqlite3.Database("./db/bakery.db");
 
+// Lägg till denna middleware tidigt i din app-konfiguration
 app.use((req, res, next) => {
-    req.db = db;
+    console.log(`Request for: ${req.url}`);
     next();
-});
+  });
+  
 
 //Konfiguration av middleware
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.json());
-app.use(express.static('src'));
+
+app.use((req, res, next) => {
+    req.db = db;
+    next();
+});
 
 const port = process.env.PORT || 3333;
 
@@ -33,7 +40,16 @@ const authRoutes = require("./routes/authRoutes");
 const menuRoutes = require("./routes/menuRoutes");
 const contactRoutes = require("./routes/customerRoutes");
 
-//Använda routes
+// Placera detta före dina API-routes och catch-all route
+app.use(express.static(path.join(__dirname, 'dist'), {
+  setHeaders: (res, filePath) => {
+    if (path.extname(filePath) === '.js') {
+      res.setHeader('Content-Type', 'application/javascript');
+    }
+  }
+}));
+
+//Använda API routes
 app.use("/api/auth", authRoutes);
 app.use("/api/menu", menuRoutes);
 app.use("/api/contact", contactRoutes);
@@ -43,27 +59,13 @@ app.get("/api/protected", authenticateToken, (req, res) => {
     res.json({message: "Skyddad route!"});
 });
 
-//Validera token för admin, ge access till skyddade routes
-//URL: http://localhost:3333/api/protected 
-function authenticateToken(req, res, next) {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1]; //Token
+//Statiska filer från "dist" katalogen
+app.use(express.static(path.join(__dirname, 'dist')));
 
-    if(token == null) {
-        return res.status(401).json({message: "Not authorized - token missing!"});
-        //console.log("Token missing");
-    }
-
-    jwt.verify(token, process.env.JWT_SECRET_KEY, (err, admin_name) => {
-        if(err){ 
-            return res.status(403).json({message: "Unvalid JWT"});
-           
-    };
-        console.log("Lyckat!");
-        req.admin_name = admin_name;        
-        next();
-    });
-};
+//Hantera klient- och server-sidor
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+});
 
 //Starta servern
 const server = app.listen(port, () => {

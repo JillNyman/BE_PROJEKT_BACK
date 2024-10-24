@@ -5,11 +5,13 @@ const router = express.Router();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
+const { authenticateToken } = require('../authMiddleware');
 
 
 //Hämta alla användare
 // http://localhost:333X/api/auth/ 
-router.get('/', (req, res) => {
+/*console.log(authenticateToken);
+router.get('/', authenticateToken, (req, res) => {
     const db = req.db;
     const sql = 'SELECT * FROM admin_users;';
     db.all(sql, (err, rows) => {
@@ -21,10 +23,10 @@ router.get('/', (req, res) => {
             console.table(rows);
         }
     });
-})
+})*/
 
 //Skapa ny adminanvändare
-router.post("/regadmin", async(req, res) =>{
+router.post("/regadmin", authenticateToken, async(req, res) =>{
     const db = req.db;
     console.log("Initierat registrering av ny admin...");
     try{
@@ -57,7 +59,7 @@ router.post("/regadmin", async(req, res) =>{
 
 
 //Logga in adminanvändare URL: http://localhost:3333/api/auth/loginadmin 
-router.post("/loginadmin", (req, res) => {
+router.post("/loginadmin", async(req, res) => {
     const db = req.db;
     try{
         let admin_name = req.body.admin_name;
@@ -74,16 +76,19 @@ router.post("/loginadmin", (req, res) => {
        const sql = `SELECT * FROM admin_users WHERE admin_name=?`;
        db.get(sql, [admin_name], async (err, row) => {
         if(err){
-            res.status(400).json({message: "Error authenticating admin..."});
+            return res.status(400).json({message: "Error authenticating admin..."});
         } else if(!row) {
-            res.status(401).json({message: "Incorrect username/password!"});
+            return res.status(401).json({message: "Incorrect username/password!"});
         } else {
             //Användaren finns
             console.log("Användaren finns");
-            const passwordMatch = await bcrypt.compare(admin_password, row.admin_password);
+        
+
+        //Kontroll av lösenord
+        const passwordMatch = await bcrypt.compare(admin_password, row.admin_password);
 
             if(!passwordMatch) {
-                res.status(401).json({message: "Incorrect username/password"});
+                return res.status(401).json({message: "Incorrect username/password"});
             } else {
                 //Skapa JWT
                 const payload = {admin_name: row.admin_name}; // <----
@@ -97,13 +102,14 @@ router.post("/loginadmin", (req, res) => {
                 
             }
         }
+    });
+        } catch (error) {
+            res.status(500).json({error: "Server error"});
+        }   
+       
        });
 
-    } catch (error) {
-        res.status(500).json({error: "Server error"});
-    }       
-    
-});
+ 
 
 module.exports = router;
 
