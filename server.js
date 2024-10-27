@@ -16,7 +16,7 @@ const app = express();
 //Koppla upp mot databasen
 const db = new sqlite3.Database("./db/bakery.db");
 
-// Lägg till denna middleware tidigt i din app-konfiguration
+// Middleware
 app.use((req, res, next) => {
     console.log(`Request for: ${req.url}`);
     next();
