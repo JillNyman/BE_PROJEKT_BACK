@@ -55,10 +55,10 @@ menuRouter.post("/menu", authenticateToken, (req, res) => {
     const db = req.db;
         const product = req.body;
 
-        /*const validate = validateInput(product);
+        const validate = validateInput(product);
         if(!validate.isValid) {
             return res.status(400).json({ message: validate.message});
-        }*/
+        }
 
         const { prod_category, prod_name, prod_price, prod_description } = product;
         try{

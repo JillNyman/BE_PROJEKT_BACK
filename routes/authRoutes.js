@@ -8,23 +8,6 @@ require("dotenv").config();
 const { authenticateToken } = require('../authMiddleware');
 
 
-//Hämta alla användare
-// http://localhost:333X/api/auth/ 
-/*console.log(authenticateToken);
-router.get('/', authenticateToken, (req, res) => {
-    const db = req.db;
-    const sql = 'SELECT * FROM admin_users;';
-    db.all(sql, (err, rows) => {
-        if(err){
-            res.status(400).json({ message: "Error when retrieving list of admins"});
-            return;
-        } else {
-            res.json(rows);
-            console.table(rows);
-        }
-    });
-})*/
-
 //Skapa ny adminanvändare
 router.post("/regadmin", authenticateToken, async(req, res) =>{
     const db = req.db;
@@ -48,13 +31,11 @@ router.post("/regadmin", authenticateToken, async(req, res) =>{
             } else {
                 res.status(201).json({message: "Admin created"});
             }
-        });
-        
+        });        
 
     } catch (error) {
         res.status(500).json({error: "Server error"});
-    }
-    
+    }    
 });
 
 

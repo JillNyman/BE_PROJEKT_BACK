@@ -40,7 +40,7 @@ const authRoutes = require("./routes/authRoutes");
 const menuRoutes = require("./routes/menuRoutes");
 const contactRoutes = require("./routes/customerRoutes");
 
-// Placera detta före dina API-routes och catch-all route
+// Referens till mappen som serversidan ska utgå från
 app.use(express.static(path.join(__dirname, 'dist'), {
   setHeaders: (res, filePath) => {
     if (path.extname(filePath) === '.js') {

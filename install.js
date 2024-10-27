@@ -4,17 +4,9 @@ const sqlite3 = require('sqlite3').verbose();
 
 const db = new sqlite3.Database(process.env.DATABASE);
 
-const addColumn = `ALTER TABLE menu ADD COLUMN prod_img TEXT;`;
-
-db.run(addColumn,function(err) {
-    if(err){
-        return console.error(err.message);
-    }
-    console.log('Kolumn tillagd.');
-});
 
 //Skapa tabell: menu
-/*db.serialize(() => {
+db.serialize(() => {
     db.run("DROP TABLE IF EXISTS menu");
 
     db.run(`CREATE TABLE menu(
@@ -26,8 +18,6 @@ db.run(addColumn,function(err) {
     )`);
     console.log("Table MENU created");
 })
-
-//BOOL 1=true 0=false
 
 //Skapa tabell: inbox
 db.serialize(() => {
@@ -70,7 +60,7 @@ db.serialize(() => {
         customer_created DATETIME DEFAULT CURRENT_TIMESTAMP  
     )`);
     console.log("Table CUSTOMER_USERS created");
-})*/
+})
 
 db.close((err) => {
     if(err) {

@@ -41,13 +41,13 @@ customerRouter.get('/', authenticateToken, (req, res) => {
         if(rows.length === 0){
             res.status(404).json({message: "Inga poster funna!"});
         }else {
-            res.status(200).json(rows);
-            //res.json(rows);
-            console.table(rows);
+            res.status(200).json(rows);           
+            
         };
     });
 });
 
+//Raderar valt meddelande via klientsidan
 customerRouter.delete('/:id', authenticateToken, (req, res) => {
     const db = req.db;
     const id = parseInt(req.params.id, 10);
